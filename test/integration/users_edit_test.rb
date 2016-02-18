@@ -4,7 +4,7 @@ class UsersEditTest < ActionDispatch::IntegrationTest
   def setup
     @user = users(:michael)
   end
-  test"unsuccessful edit" do
+  test "unsuccessful edit" do
     log_in_as(@user)
     get edit_user_path(@user)
     assert_template 'users/edit'
@@ -29,5 +29,17 @@ class UsersEditTest < ActionDispatch::IntegrationTest
    @user.reload
    assert_equal name, @user.name
    assert_equal email, @user.email
+  end
+  test "successful second login without friendly forwarding" do
+    get edit_user_path(@user)
+    log_in_as(@user)
+    assert_redirected_to edit_user_path(@user)
+    follow_redirect!
+    assert_select "a[href=?]", logout_path
+    delete logout_path
+    assert_not is_logged_in?
+    assert_redirected_to root_url
+    log_in_as(@user)
+    assert_redirected_to user_path(@user)
   end
 end
